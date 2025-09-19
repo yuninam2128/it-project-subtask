@@ -6,13 +6,13 @@ import "./SubtaskMindmap.css";
 const CENTER_NODE_ID = "center";
 
 function SubtaskMindmap({
-    project, 
-    positions, 
-    onSubtaskClick, 
-    onAddSubtask, 
-    onEditSubtask, 
-    onDeleteSubtask, 
-    onPositionChange, 
+    project,
+    positions,
+    onSubtaskClick,
+    onAddSubtask,
+    onEditSubtask,
+    onDeleteSubtask,
+    onPositionChange,
     onCanvasResize //캔버스 사이즈 전달
 }) {
   const [showForm, setShowForm] = useState(false);
@@ -20,6 +20,7 @@ function SubtaskMindmap({
   const [isDragging, setIsDragging] = useState(false);
   const [lastMousePos, setLastMousePos] = useState(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
+  const [dragPositions, setDragPositions] = useState({}); // 드래그 중인 노드들의 임시 위치
 
 
   //캔버스 크기 추적
@@ -63,9 +64,11 @@ function SubtaskMindmap({
         data: subtask
       };
     });
+
     return [center, ...subtaskNodes];
   };
 
+  //연결선 데이터 생성 
   const generateEdges = () => {
     return project.subtasks.map(subtask => ({
       id: `edge-${subtask.id}`,
@@ -78,29 +81,69 @@ function SubtaskMindmap({
   const nodes = generateNodes(size.width, size.height);
   const edges = generateEdges();
 
-  // 노드 위치 가져오기
+  // 노드 위치 가져오기 (드래그 중인 경우 드래그 위치 사용)
   const getNodePosition = (node) => {
-    if (node.isCenter) {
-      return {
-        x: node.x + mapOffset.x,
-        y: node.y + mapOffset.y
-      };
-    }
+    const dragPos = dragPositions[node.id];
+    const baseX = dragPos ? dragPos.x : node.x;
+    const baseY = dragPos ? dragPos.y : node.y;
+
     return {
-      x: node.x + mapOffset.x,
-      y: node.y + mapOffset.y
+      x: baseX + mapOffset.x,
+      y: baseY + mapOffset.y
     };
   };
 
-  // 노드 이동 처리 
+  // 노드 이동 처리
   const handleNodeMove = (nodeId, x, y) => {
     if (nodeId === CENTER_NODE_ID) return; // 중심 노드는 이동 불가
-    
-    // 맵 오프셋을 고려한 실제 위치 계산
-    const actualX = x - mapOffset.x;
-    const actualY = y - mapOffset.y;
-    
+
+    // 노드 정보 가져오기 (반지름 확인용)
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node) return;
+
+    const nodeRadius = (node.radius || 40); // 노드 반지름
+
+    // 드래그 중에는 임시 위치 저장 (연결선 실시간 업데이트용)
+    let actualX = x - mapOffset.x;
+    let actualY = y - mapOffset.y;
+
+    // 캔버스 경계 내로 제한
+    const minX = nodeRadius;
+    const minY = nodeRadius;
+    const maxX = size.width - nodeRadius;
+    const maxY = size.height - nodeRadius;
+
+    actualX = Math.max(minX, Math.min(actualX, maxX));
+    actualY = Math.max(minY, Math.min(actualY, maxY));
+
+    setDragPositions(prev => ({
+      ...prev,
+      [nodeId]: { x: actualX, y: actualY }
+    }));
+
     onPositionChange(nodeId, actualX, actualY);
+  };
+
+  // 드래그 시작
+  const handleNodeDragStart = (nodeId) => {
+    // 드래그 시작 시 기존 위치를 dragPositions에 설정
+    const node = nodes.find(n => n.id === nodeId);
+    if (node && !node.isCenter) {
+      setDragPositions(prev => ({
+        ...prev,
+        [nodeId]: { x: node.x, y: node.y }
+      }));
+    }
+  };
+
+  // 드래그 종료
+  const handleNodeDragEnd = (nodeId) => {
+    // 드래그 종료 시 임시 위치 제거
+    setDragPositions(prev => {
+      const newDragPositions = { ...prev };
+      delete newDragPositions[nodeId];
+      return newDragPositions;
+    });
   };
 
   // 노드 클릭 처리 
@@ -111,10 +154,12 @@ function SubtaskMindmap({
 
   // 맵 드래그 처리
   const handleMapMouseDown = (e) => {
+    // 노드를 클릭한 경우 맵 드래그를 시작하지 않음
     if (e.target.closest('.subtask-node')) return;
-    
+
     setIsDragging(true);
     setLastMousePos({ x: e.clientX, y: e.clientY });
+    e.preventDefault();
   };
   const handleMapMouseMove = (e) => {
     if (!isDragging || !lastMousePos) return;
@@ -128,10 +173,12 @@ function SubtaskMindmap({
     }));
 
     setLastMousePos({ x: e.clientX, y: e.clientY });
+    e.preventDefault();
   };
-  const handleMapMouseUp = () => {
+  const handleMapMouseUp = (e) => {
     setIsDragging(false);
     setLastMousePos(null);
+    if (e) e.preventDefault();
   };
 
     // 전역 마우스 이벤트
@@ -182,27 +229,19 @@ function SubtaskMindmap({
                 })}
 
                 {/* 노드 */}
-                {/* {nodes.map(node => (
+                {nodes.map(node => (
                     <SubtaskNode
                         key={node.id}
                         node={{...node, ...getNodePosition(node)}}
                         onMove={handleNodeMove}
+                        onDragStart={handleNodeDragStart}
+                        onDragEnd={handleNodeDragEnd}
                         onClick={()=>handleNodeClick(node)}
                         onEdit={node.isCenter ? null : () => onEditSubtask(node.data)}
                         onDelete={node.isCenter ? null : () => onDeleteSubtask(node.id)}
+                        canvasSize={size}
                     />
-                ))} */}
-                    {nodes.map(node => (
-                      <SubtaskNode
-                        key={node.id}
-                        node={node} // 논리 좌표만 넘김
-                        mapOffset={mapOffset} // mapOffset을 별도 prop으로 넘김
-                        onMove={handleNodeMove}
-                        onClick={() => handleNodeClick(node)}
-                        onEdit={node.isCenter ? null : () => onEditSubtask(node.data)}
-                        onDelete={node.isCenter ? null : () => onDeleteSubtask(node.id)}
-                      />
-                    ))}
+                ))}
             </div>
         </div>
   );
