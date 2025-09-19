@@ -224,6 +224,8 @@ function ProjectDetail() {
   return (
     <div className="body">
         <div className="container">
+            {/* 이 부분을 '지우고' sidebar컴포넌트를 넣는다. */}
+            {/* 단, sidebar 컴포넌트 전체를 감싼 div태그 className은 무조건 sidebar로 할 것 */}
             <aside className="sidebar">
             </aside>
 
@@ -252,10 +254,11 @@ function ProjectDetail() {
                     {/* <section className="todo-bar"></section> */}
                 </main>
 
+                {/* 마찬가지로 이 부분을 '지우고' 타임라인 컴포넌트를 넣는다. */}
+                {/* 단, timeline 컴포넌트 전체를 감싼 div태그 className은 무조건 timeline로 할 것 */}
                 <footer className="timeline">
                     2024.06.20
                 </footer>
-
                 {showAddForm && (
                     <SubtaskForm
                     onSubmit={(newSubtask) => {
