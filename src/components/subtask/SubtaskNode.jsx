@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import EditSubtaskForm from "./EditSubtaskForm";
 
-function SubtaskNode({ node, onMove, onClick, onEdit, onDelete }) {
+function SubtaskNode({ node, mapOffset, onMove, onClick, onEdit, onDelete }) {
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [dragStartPos, setDragStartPos] = useState({ x: 0, y: 0 });
@@ -120,8 +120,8 @@ function SubtaskNode({ node, onMove, onClick, onEdit, onDelete }) {
         className={`subtask-node ${node.isCenter ? 'center' : ''}`}
         style={{
           position: 'absolute',
-          left: node.x - nodeSize / 2,
-          top: node.y - nodeSize / 2,
+          left: (node.x + (mapOffset?.x || 0)) - nodeSize / 2,
+          top: (node.y + (mapOffset?.y || 0)) - nodeSize / 2,
           width: nodeSize,
           height: nodeSize,
           backgroundColor: getPriorityColor(node.priority, node.isCenter),

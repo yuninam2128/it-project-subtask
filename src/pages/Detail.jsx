@@ -5,6 +5,7 @@ import SubtaskForm from "../components/subtask/SubtaskForm";
 // import TodoManager from "../components/todo/TodoManager";
 import "./Detail.css";
 import Header from "../components/header/header";
+import TodoManager from "../components/todo/TodoManager";
 
 // 더미 데이터 (실제로는 Firebase에서 가져올 데이터)
 const getDummyProjectData = (projectId) => ({
@@ -244,8 +245,11 @@ function ProjectDetail() {
                         onPositionChange={handleSubtaskPositionChange}
                         onCanvasResize={(w,h)=> setCanvasSize({width:w, height:h})}
                     />
+                    <TodoManager
+                        subtask={null}
+                    />
                     {/* <section className="main-content"></section> */}
-                    <section className="todo-bar"></section>
+                    {/* <section className="todo-bar"></section> */}
                 </main>
 
                 <footer className="timeline">
@@ -260,6 +264,7 @@ function ProjectDetail() {
                     }}
                     onClose={handleFormClose}
                     />
+
                 )}
             </div>
         </div>

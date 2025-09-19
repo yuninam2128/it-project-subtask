@@ -63,11 +63,9 @@ function SubtaskMindmap({
         data: subtask
       };
     });
-
     return [center, ...subtaskNodes];
   };
 
-  //연결선 데이터 생성 
   const generateEdges = () => {
     return project.subtasks.map(subtask => ({
       id: `edge-${subtask.id}`,
@@ -184,7 +182,7 @@ function SubtaskMindmap({
                 })}
 
                 {/* 노드 */}
-                {nodes.map(node => (
+                {/* {nodes.map(node => (
                     <SubtaskNode
                         key={node.id}
                         node={{...node, ...getNodePosition(node)}}
@@ -193,7 +191,18 @@ function SubtaskMindmap({
                         onEdit={node.isCenter ? null : () => onEditSubtask(node.data)}
                         onDelete={node.isCenter ? null : () => onDeleteSubtask(node.id)}
                     />
-                ))}
+                ))} */}
+                    {nodes.map(node => (
+                      <SubtaskNode
+                        key={node.id}
+                        node={node} // 논리 좌표만 넘김
+                        mapOffset={mapOffset} // mapOffset을 별도 prop으로 넘김
+                        onMove={handleNodeMove}
+                        onClick={() => handleNodeClick(node)}
+                        onEdit={node.isCenter ? null : () => onEditSubtask(node.data)}
+                        onDelete={node.isCenter ? null : () => onDeleteSubtask(node.id)}
+                      />
+                    ))}
             </div>
         </div>
   );

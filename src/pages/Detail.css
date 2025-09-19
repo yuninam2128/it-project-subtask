@@ -56,15 +56,6 @@
   overflow: hidden;
 }
 
-/* 우측 사이드바 */
-.todo-bar {
-  background: linear-gradient(224deg, #171C40 0%, #3C49A6 100%);
-  border-radius: 44px;
-  border: 1px solid #404040;
-  padding: 20px;
-  overflow: hidden;
-}
-
 /* 타임라인 */
 .timeline {
   background: linear-gradient(0deg, var(--BG-3, #171C40) 0%, #3C49A6 100%);
