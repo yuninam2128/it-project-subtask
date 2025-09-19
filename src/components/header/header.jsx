@@ -1,7 +1,7 @@
 import "./header.css";
 import React, { useState, useEffect } from "react";
 
-function Header() {
+function Header({ onAddClick }) {
   const [fire, setFire] = useState(0);
   const [heart, setHeart] = useState(0);
   const [light, setLight] = useState(0);
@@ -19,7 +19,7 @@ function Header() {
     <div className ="header">
     <div className="left-header">
         <button className="header__button header__button--back">←</button>
-        <button className="header__button header__button--add">+ 프로젝트 추가</button>
+        <button className="header__button header__button--add" onClick={onAddClick}>+ 프로젝트 추가</button>
       </div>
       <div className="right-header">
         <button className="header__button header__button--right">
